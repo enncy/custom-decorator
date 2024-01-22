@@ -6,6 +6,8 @@
 
 - [Install](#Install)
 - [Example](#Example)
+  - [TransformValue](#TransformValue-Example)
+  - [Extends](#Extends-Example)
 - [Api](#Api)
 
 ## Install
@@ -61,7 +63,7 @@ output:
 str
 ```
 
-## Example TransformValue
+### TransformValue Example
 
 ```ts
 import { customParameterDecorator } from 'custom-decorator';
@@ -86,6 +88,32 @@ console.log(ParamDecorator.get(new A(), 'b', 0));
 // { name: 'body', type: 'object' }
 ```
 
+### Extends Example
+
+```ts
+@Controller('/b')
+class B extends A {}
+
+class C extends A {
+	override b() {}
+}
+
+/**
+ * run: tsc && node ./lib/tests/extends.test.js
+ */
+console.log(ControllerDecorator.get(B));
+console.log(ControllerDecorator.get(C));
+console.log(ApiDecorator.get(new C(), 'b'));
+```
+
+output:
+
+```
+/b
+/a
+/b
+```
+
 ## Api
 
 - [type `DecoratorOptions`](#type-decoratoroptions)
@@ -101,7 +129,7 @@ console.log(ParamDecorator.get(new A(), 'b', 0));
 - value: `(...args: any[]) => any` decorator value transform function
   - args means the arguments of the decorator
   - return the reflect-metadata value
-  - example see [Example TransformValue](#example-transformvalue)
+  - example see [TransformValue Example](#transformvalue-example)
 
 ### function `customClassDecorator`
 
