@@ -1,0 +1,14 @@
+{
+	"eslint.validate": ["javascript"],
+	"editor.formatOnSave": true,
+	"editor.codeActionsOnSave": {
+		"source.fixAll.eslint": "explicit"
+	},
+	"editor.defaultFormatter": "esbenp.prettier-vscode",
+	"editor.mouseWheelZoom": true,
+	"editor.mouseWheelScrollSensitivity": 2,
+	"typescript.suggest.jsdoc.generateReturns": false,
+	"[typescript]": {
+		"editor.defaultFormatter": "esbenp.prettier-vscode"
+	}
+}

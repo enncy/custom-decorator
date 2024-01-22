@@ -1,0 +1,30 @@
+{
+	"name": "custom-decorator",
+	"version": "0.0.1",
+	"description": "easier to create your custom decorator",
+	"main": "./lib/src/index.js",
+	"scripts": {
+		"test": "tsc && node ./lib/tests/index.js"
+	},
+	"repository": {
+		"type": "git",
+		"url": "git+ssh://git@github.com/enncy/custom-decorator.git"
+	},
+	"keywords": [
+		"typescript",
+		"decorator",
+		"reflect-metadata"
+	],
+	"author": "enncy",
+	"license": "MIT",
+	"bugs": {
+		"url": "https://github.com/enncy/custom-decorator/issues"
+	},
+	"homepage": "https://github.com/enncy/custom-decorator#readme",
+	"dependencies": {
+		"reflect-metadata": "^0.2.1"
+	},
+	"devDependencies": {
+		"typescript": "^5.3.3"
+	}
+}
