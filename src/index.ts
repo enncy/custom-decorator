@@ -11,7 +11,7 @@ import {
 export type DecoratorInfo<T extends (...args: any) => any, Args extends Array<any>, Value> = {
 	name: string;
 	value: (...args: Args) => Value;
-	get: (...args: Parameters<T>) => Value;
+	get: (...args: Parameters<T>) => Value | undefined;
 };
 
 export type DecoratorOptions<Args extends Array<any>, Value> = { name: string; value: (...args: Args) => Value };
