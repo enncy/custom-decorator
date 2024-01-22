@@ -17,16 +17,16 @@ export type DecoratorInfo<T extends (...args: any) => any, Args extends Array<an
 export type DecoratorOptions<Args extends Array<any>, Value> = { name: string; value: (...args: Args) => Value };
 
 export function customClassDecorator<
-	FunctionType extends (...args: Args) => ClassDecorator,
-	Args extends Array<any>,
-	Value = Args[number]
->(options: DecoratorOptions<Args, Value>): [FunctionType, DecoratorInfo<ClassDecorator, Args, Value>] {
+	DecoratorDescriber extends (...args: any[]) => ClassDecorator,
+	Args extends Array<any> = Parameters<DecoratorDescriber>,
+	Value = any
+>(options: DecoratorOptions<Args, Value>): [DecoratorDescriber, DecoratorInfo<ClassDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
 			return (target) => {
 				setClassMetadata(options.name, target, options.value(...args));
 			};
-		}) as FunctionType,
+		}) as DecoratorDescriber,
 		{
 			name: options.name,
 			value: options.value,
@@ -36,16 +36,16 @@ export function customClassDecorator<
 }
 
 export function customPropertyDecorator<
-	FunctionType extends (...args: Args) => PropertyDecorator,
-	Args extends Array<any>,
-	Value = Args[number]
->(options: DecoratorOptions<Args, Value>): [FunctionType, DecoratorInfo<PropertyDecorator, Args, Value>] {
+	DecoratorDescriber extends (...args: any[]) => PropertyDecorator,
+	Args extends Array<any> = Parameters<DecoratorDescriber>,
+	Value = any
+>(options: DecoratorOptions<Args, Value>): [DecoratorDescriber, DecoratorInfo<PropertyDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
 			return (target, key) => {
 				setPropertyMetadata(options.name, target, key.toString(), options.value(...args));
 			};
-		}) as FunctionType,
+		}) as DecoratorDescriber,
 		{
 			name: options.name,
 			value: options.value,
@@ -55,16 +55,16 @@ export function customPropertyDecorator<
 }
 
 export function customParameterDecorator<
-	FunctionType extends (...args: Args) => ParameterDecorator,
-	Args extends Array<any>,
-	Value = Args[number]
->(options: DecoratorOptions<Args, Value>): [FunctionType, DecoratorInfo<ParameterDecorator, Args, Value>] {
+	DecoratorDescriber extends (...args: any[]) => ParameterDecorator,
+	Args extends Array<any> = Parameters<DecoratorDescriber>,
+	Value = any
+>(options: DecoratorOptions<Args, Value>): [DecoratorDescriber, DecoratorInfo<ParameterDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
 			return (target, key, parameter_index) => {
 				setParameterMetadata(options.name, target, key, parameter_index, options.value(...args));
 			};
-		}) as FunctionType,
+		}) as DecoratorDescriber,
 		{
 			name: options.name,
 			value: options.value,
