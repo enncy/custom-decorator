@@ -19,7 +19,7 @@ export type DecoratorOptions<Args extends Array<any>, Value> = { name: string; v
 export function customClassDecorator<
 	FunctionType extends (...args: Args) => ClassDecorator,
 	Args extends Array<any>,
-	Value
+	Value = Args[number]
 >(options: DecoratorOptions<Args, Value>): [FunctionType, DecoratorInfo<ClassDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
@@ -38,7 +38,7 @@ export function customClassDecorator<
 export function customPropertyDecorator<
 	FunctionType extends (...args: Args) => PropertyDecorator,
 	Args extends Array<any>,
-	Value
+	Value = Args[number]
 >(options: DecoratorOptions<Args, Value>): [FunctionType, DecoratorInfo<PropertyDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
@@ -57,7 +57,7 @@ export function customPropertyDecorator<
 export function customParameterDecorator<
 	FunctionType extends (...args: Args) => ParameterDecorator,
 	Args extends Array<any>,
-	Value
+	Value = Args[number]
 >(options: DecoratorOptions<Args, Value>): [FunctionType, DecoratorInfo<ParameterDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
