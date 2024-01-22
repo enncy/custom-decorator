@@ -25,7 +25,7 @@ export function customClassDecorator<
 	return [
 		((...args: Args) => {
 			return (target) => {
-				setClassMetadata(options.name, target, options.value.apply({ target: target }, ...args));
+				setClassMetadata(options.name, target, options.value.apply({ target: target }, args));
 			};
 		}) as DecoratorDescriber,
 		{
@@ -51,7 +51,7 @@ export function customPropertyDecorator<
 					options.name,
 					target,
 					key.toString(),
-					options.value.apply({ target: target, key: key }, ...args)
+					options.value.apply({ target: target, key: key }, args)
 				);
 			};
 		}) as DecoratorDescriber,
@@ -79,7 +79,7 @@ export function customParameterDecorator<
 					target,
 					key,
 					parameter_index,
-					options.value.apply({ target: target, key: key, parameterIndex: parameter_index }, ...args)
+					options.value.apply({ target: target, key: key, parameterIndex: parameter_index }, args)
 				);
 			};
 		}) as DecoratorDescriber,
