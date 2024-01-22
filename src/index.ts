@@ -14,17 +14,18 @@ export type DecoratorInfo<T extends (...args: any) => any, Args extends Array<an
 	get: (...args: Parameters<T>) => Value | undefined;
 };
 
-export type DecoratorOptions<Args extends Array<any>, Value> = { name: string; value: (...args: Args) => Value };
-
 export function customClassDecorator<
 	DecoratorDescriber extends (...args: any[]) => ClassDecorator,
 	Args extends Array<any> = Parameters<DecoratorDescriber>,
 	Value = any
->(options: DecoratorOptions<Args, Value>): [DecoratorDescriber, DecoratorInfo<ClassDecorator, Args, Value>] {
+>(options: {
+	name: string;
+	value: (this: { target: Function }, ...args: Args) => Value;
+}): [DecoratorDescriber, DecoratorInfo<ClassDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
 			return (target) => {
-				setClassMetadata(options.name, target, options.value(...args));
+				setClassMetadata(options.name, target, options.value.apply({ target: target }, ...args));
 			};
 		}) as DecoratorDescriber,
 		{
@@ -39,11 +40,19 @@ export function customPropertyDecorator<
 	DecoratorDescriber extends (...args: any[]) => PropertyDecorator,
 	Args extends Array<any> = Parameters<DecoratorDescriber>,
 	Value = any
->(options: DecoratorOptions<Args, Value>): [DecoratorDescriber, DecoratorInfo<PropertyDecorator, Args, Value>] {
+>(options: {
+	name: string;
+	value: (this: { target: Object; key: string | symbol }, ...args: Args) => Value;
+}): [DecoratorDescriber, DecoratorInfo<PropertyDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
 			return (target, key) => {
-				setPropertyMetadata(options.name, target, key.toString(), options.value(...args));
+				setPropertyMetadata(
+					options.name,
+					target,
+					key.toString(),
+					options.value.apply({ target: target, key: key }, ...args)
+				);
 			};
 		}) as DecoratorDescriber,
 		{
@@ -58,11 +67,20 @@ export function customParameterDecorator<
 	DecoratorDescriber extends (...args: any[]) => ParameterDecorator,
 	Args extends Array<any> = Parameters<DecoratorDescriber>,
 	Value = any
->(options: DecoratorOptions<Args, Value>): [DecoratorDescriber, DecoratorInfo<ParameterDecorator, Args, Value>] {
+>(options: {
+	name: string;
+	value: (this: { target: Object; key: string | symbol | undefined; parameterIndex: number }, ...args: Args) => Value;
+}): [DecoratorDescriber, DecoratorInfo<ParameterDecorator, Args, Value>] {
 	return [
 		((...args: Args) => {
 			return (target, key, parameter_index) => {
-				setParameterMetadata(options.name, target, key, parameter_index, options.value(...args));
+				setParameterMetadata(
+					options.name,
+					target,
+					key,
+					parameter_index,
+					options.value.apply({ target: target, key: key, parameterIndex: parameter_index }, ...args)
+				);
 			};
 		}) as DecoratorDescriber,
 		{
