@@ -43,7 +43,10 @@ export function customPropertyDecorator<
 >(options: {
 	name: string;
 	value: (this: { target: Object; key: string | symbol }, ...args: Args) => Value;
-}): [DecoratorDescriber, DecoratorInfo<PropertyDecorator, Args, Value>] {
+}): [
+	DecoratorDescriber,
+	DecoratorInfo<PropertyDecorator, Args, Value> & { getDesignType: (target: Object, key: string | symbol) => any }
+] {
 	return [
 		((...args: Args) => {
 			return (target, key) => {
@@ -58,7 +61,45 @@ export function customPropertyDecorator<
 		{
 			name: options.name,
 			value: options.value,
-			get: (target: any, key: string) => getPropertyMetadata(options.name, target, key)
+			get: (target: any, key: string) => getPropertyMetadata(options.name, target, key),
+			getDesignType: (target: any, key: string) => Reflect.getMetadata('design:type', target, key)
+		}
+	];
+}
+
+export function customMethodDecorator<
+	DecoratorDescriber extends (...args: any[]) => PropertyDecorator,
+	Args extends Array<any> = Parameters<DecoratorDescriber>,
+	Value = any
+>(options: {
+	name: string;
+	value: (this: { target: Object; key: string | symbol }, ...args: Args) => Value;
+}): [
+	DecoratorDescriber,
+	DecoratorInfo<PropertyDecorator, Args, Value> & {
+		getDesignType: (target: Object, key: string | symbol) => any;
+		getReturnType: (target: Object, key: string | symbol) => any;
+		getParameterTypes: (target: Object, key: string | symbol) => any[];
+	}
+] {
+	return [
+		((...args: Args) => {
+			return (target, key) => {
+				setPropertyMetadata(
+					options.name,
+					target,
+					key.toString(),
+					options.value.apply({ target: target, key: key }, args)
+				);
+			};
+		}) as DecoratorDescriber,
+		{
+			name: options.name,
+			value: options.value,
+			get: (target: any, key: string) => getPropertyMetadata(options.name, target, key),
+			getDesignType: (target: any, key: string) => Reflect.getMetadata('design:type', target, key),
+			getReturnType: (target: any, key: string) => Reflect.getMetadata('design:returntype', target, key),
+			getParameterTypes: (target: any, key: string) => Reflect.getMetadata('design:paramtypes', target, key)
 		}
 	];
 }

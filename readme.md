@@ -19,14 +19,19 @@ npm i custom-decorator
 ## Example
 
 ```ts
-import { customClassDecorator, customPropertyDecorator, customParameterDecorator } from 'custom-decorator';
+import { customClassDecorator, customPropertyDecorator, customParameterDecorator, customMethodDecorator } from '../src';
 
 const [Controller, ControllerDecorator] = customClassDecorator({
 	name: 'Controller',
 	value: (path: string) => path
 });
 
-const [Api, ApiDecorator] = customPropertyDecorator({
+const [Value, ValueDecorator] = customPropertyDecorator({
+	name: 'Value',
+	value: (val: any) => val
+});
+
+const [Api, ApiDecorator] = customMethodDecorator({
 	name: 'Api',
 	value: (path: string) => path
 });
@@ -36,17 +41,31 @@ const [Param, ParamDecorator] = customParameterDecorator({
 	value: (name: string) => name
 });
 
-@Controller('/a')
-class A {
+@Controller('/test')
+class TestController {
+	@Value(1)
+	val: number;
+
 	@Api('/b')
-	b(@Param('str') str: string) {
+	name(@Param('str') str: string): string {
 		console.log(str);
+		return str;
 	}
 }
 
-console.log(ControllerDecorator.get(A));
-console.log(ApiDecorator.get(new A(), 'b'));
-console.log(ParamDecorator.get(new A(), 'b', 0));
+const controller = new TestController();
+
+console.log(ControllerDecorator.get(TestController));
+
+console.log(ValueDecorator.get(controller, 'val'));
+console.log(ValueDecorator.getDesignType(controller, 'val'));
+
+console.log(ApiDecorator.get(controller, 'test'));
+console.log(ApiDecorator.getDesignType(controller, 'test'));
+console.log(ApiDecorator.getParameterTypes(controller, 'test'));
+console.log(ApiDecorator.getReturnType(controller, 'test'));
+
+console.log(ParamDecorator.get(controller, 'test', 0));
 ```
 
 run:
@@ -59,7 +78,12 @@ output:
 
 ```
 /a
+1
+[Function: Number]
 /b
+[Function: Function]
+[ [Function: String] ]
+[Function: String]
 str
 ```
 
@@ -91,27 +115,47 @@ console.log(ParamDecorator.get(new A(), 'b', 0));
 ### Extends Example
 
 ```ts
-@Controller('/b')
-class B extends A {}
+import { customClassDecorator, customPropertyDecorator, customParameterDecorator } from '../src';
 
-class C extends A {
-	override b() {}
+const [Controller, ControllerDecorator] = customClassDecorator({
+	name: 'Controller',
+	value: (path: string) => path
+});
+
+const [Api, ApiDecorator] = customPropertyDecorator({
+	name: 'Api',
+	value: (path: string) => path
+});
+
+class A {
+	@Api('/name')
+	name() {}
 }
 
-/**
- * run: tsc && node ./lib/tests/extends.test.js
- */
+@Controller('/b-path')
+class B extends A {}
+
+@Controller('/c-path')
+class C extends B {
+	override name() {}
+}
+
+console.log(ControllerDecorator.get(A));
 console.log(ControllerDecorator.get(B));
 console.log(ControllerDecorator.get(C));
-console.log(ApiDecorator.get(new C(), 'b'));
+
+console.log(ApiDecorator.get(new A(), 'name'));
+console.log(ApiDecorator.get(new C(), 'name'));
 ```
 
 output:
 
 ```
-/b
-/a
-/b
+undefined
+/b-path
+/c-path
+/name
+/name
 ```
 
 ## Api
@@ -139,7 +183,7 @@ output:
 - return: `[Decorator, DecoratorInfo]`
   - Decorator: decorator function
   - DecoratorInfo:
-    - get: `(target: any) => any` get decorator value
+    - `get`: get decorator value
 
 ### function `customPropertyDecorator`
 
@@ -149,7 +193,21 @@ output:
 - return: `[Decorator, DecoratorInfo]`
   - Decorator: decorator function
   - DecoratorInfo:
-    - get: `(target: any, propertyKey: string | symbol) => any` get decorator value
+    - `get`: get decorator value
+    - `getDesignType`: get decorator design type
+
+### function `customMethodDecorator`
+
+> custom method decorator
+
+- options: `DecoratorOptions`
+- return: `[Decorator, DecoratorInfo]`
+  - Decorator: decorator function
+  - DecoratorInfo:
+    - `get`: get decorator value
+    - `getDesignType`: get decorator design type
+    - `getReturnType`: get decorator return type
+    - `getParameterTypes`: get decorator parameter types
 
 ### function `customParameterDecorator`
 
@@ -159,4 +217,4 @@ output:
 - return: `[Decorator, DecoratorInfo]`
   - Decorator: decorator function
   - DecoratorInfo:
-    - get: `(target: any, propertyKey: string | symbol, parameterIndex: number) => any` get decorator value
+    - `get`: get decorator value
