@@ -1,14 +1,3 @@
-# custom-decorator
-
-> `custom-decorator` making it easier for you to customize decorators to get/set reflect-metadata values
-
-```sh
-npm i custom-decorator
-```
-
-## Example
-
-```ts
 import { CustomDecorator } from '../src/index';
 
 // example
@@ -22,7 +11,7 @@ export function Decorator(val: string): ClassDecorator {
 @Decorator('hello')
 class A {}
 
-console.log(CustomDecorator.getClassMetadata(Decorator, A)); // hello
+console.log(CustomDecorator.getClassMetadata(Decorator, A));
 
 // simplify
 
@@ -38,7 +27,6 @@ class B {
 	test(@TestParameter(2) test: number) {}
 }
 
-console.log(CustomDecorator.getClassMetadata(SimplifyDecorator, B)); // hello
-console.log(CustomDecorator.getPropertyMetadata(TestMethod, new B(), 'test')); // test
-console.log(CustomDecorator.getParameterMetadata(TestParameter, new B(), 'test', 0)); // 4
-```
+console.log(CustomDecorator.getClassMetadata(SimplifyDecorator, B));
+console.log(CustomDecorator.getPropertyMetadata(TestMethod, new B(), 'test'));
+console.log(CustomDecorator.getParameterMetadata(TestParameter, new B(), 'test', 0));

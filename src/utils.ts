@@ -88,3 +88,46 @@ export function getParameterMetadata(
 	const _name = typeof decorator_name === 'string' ? decorator_name : decorator_name.name;
 	return Reflect.getMetadata(`${METADATA_PARAMETER_KEY}:${parameter_index}:${_name.toLowerCase()}`, target, key);
 }
+
+export function factory<
+	T extends 'class' | 'property' | 'method' | 'parameter',
+	DT extends T extends 'class'
+		? ClassDecorator
+		: T extends 'property'
+		? PropertyDecorator
+		: T extends 'method'
+		? MethodDecorator
+		: T extends 'parameter'
+		? ParameterDecorator
+		: undefined,
+	Value,
+	Setter extends (...args: any[]) => Value
+>(decorator_name: string, type: T, setter: Setter): (...args: Parameters<Setter>) => DT {
+	const func = function (...args: Parameters<Setter>) {
+		if (type === 'class') {
+			return ((target) => {
+				setClassMetadata(decorator_name, target, setter(...args));
+			}) as ClassDecorator;
+		}
+		if (type === 'property') {
+			return ((target, key) => {
+				setPropertyMetadata(decorator_name, target, key, setter(...args));
+			}) as PropertyDecorator;
+		}
+		if (type === 'method') {
+			return ((target, key) => {
+				setPropertyMetadata(decorator_name, target, key, setter(...args));
+			}) as MethodDecorator;
+		}
+		if (type === 'parameter') {
+			return ((target, key, parameter_index) => {
+				setParameterMetadata(decorator_name, target, key, parameter_index, setter(...args));
+			}) as ParameterDecorator;
+		}
+		return undefined;
+	} as (...args: Parameters<Setter>) => DT;
+
+	Object.defineProperty(func, 'name', { value: decorator_name });
+
+	return func;
+}

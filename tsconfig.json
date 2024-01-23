@@ -1,18 +1,17 @@
 {
-    "compilerOptions": {
-      "target": "es5",
-      "module": "commonjs",
-      "moduleResolution": "Node",
-      "outDir": "./lib",
-      "declaration": true,
-      "emitDecoratorMetadata": true,
-      "experimentalDecorators": true,
-      "esModuleInterop": true,
-      "noImplicitAny": true,
-      "strictNullChecks": true,
-      "incremental": true,
-      "skipLibCheck": true,
-      "skipDefaultLibCheck": true
-    }
-  }
-  
+	"compilerOptions": {
+		"target": "es6",
+		"module": "commonjs",
+		"moduleResolution": "Node",
+		"outDir": "./lib",
+		"declaration": true,
+		"emitDecoratorMetadata": true,
+		"experimentalDecorators": true,
+		"esModuleInterop": true,
+		"noImplicitAny": true,
+		"strictNullChecks": true,
+		"incremental": true,
+		"skipLibCheck": true,
+		"skipDefaultLibCheck": true
+	}
+}
