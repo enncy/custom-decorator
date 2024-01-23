@@ -93,6 +93,26 @@ export function getParameterMetadata<T = any>(
 	return Reflect.getMetadata(`${METADATA_PARAMETER_KEY}:${parameter_index}:${_name.toLowerCase()}`, target, key);
 }
 
+/**
+ * 获取 design 元数据
+ * @param target
+ * @param key
+ */
+export function getDesign(
+	target: Object,
+	key: string | symbol
+): {
+	type: any;
+	paramTypes: any[];
+	returnType: any;
+} {
+	return {
+		type: Reflect.getMetadata('design:type', target, key),
+		paramTypes: Reflect.getMetadata('design:paramtypes', target, key),
+		returnType: Reflect.getMetadata('design:returntype', target, key)
+	};
+}
+
 export function factory<
 	T extends 'class' | 'property' | 'method' | 'parameter',
 	DT extends T extends 'class'
