@@ -57,7 +57,7 @@ export function setParameterMetadata(
  * @param decorator_name 		装饰器名称
  * @param target 	类
  */
-export function getClassMetadata<T>(decorator_name: string | { name: string }, target: Function): T {
+export function getClassMetadata<T = any>(decorator_name: string | { name: string }, target: Function): T {
 	const _name = typeof decorator_name === 'string' ? decorator_name : decorator_name.name;
 	return Reflect.getMetadata(`${METADATA_CLASS_KEY}:${_name.toLowerCase()}`, target);
 }
@@ -68,7 +68,7 @@ export function getClassMetadata<T>(decorator_name: string | { name: string }, t
  * @param target  类
  * @param key  	  属性
  */
-export function getPropertyMetadata<T>(
+export function getPropertyMetadata<T = any>(
 	decorator_name: string | { name: string },
 	target: Object,
 	key: string | symbol
@@ -83,7 +83,7 @@ export function getPropertyMetadata<T>(
  * @param target   类
  * @param key 	   属性
  */
-export function getParameterMetadata<T>(
+export function getParameterMetadata<T = any>(
 	decorator_name: string | { name: string },
 	target: Object,
 	key: string | symbol,
