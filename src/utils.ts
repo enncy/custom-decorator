@@ -1,3 +1,5 @@
+import 'reflect-metadata';
+
 export const METADATA_CLASS_KEY = 'metadata:class';
 export const METADATA_PROPERTY_KEY = 'metadata:property';
 export const METADATA_PARAMETER_KEY = 'metadata:parameter';
