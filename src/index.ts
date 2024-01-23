@@ -10,24 +10,45 @@ import {
 
 export type DecoratorInfo<T extends (...args: any) => any, Args extends Array<any>, Value> = {
 	name: string;
-	value: (...args: Args) => Value;
+	value?: (...args: Args) => Value;
 	get: (...args: Parameters<T>) => Value | undefined;
 };
 
-export function customClassDecorator<
-	DecoratorDescriber extends (...args: any[]) => ClassDecorator,
-	Args extends Array<any> = Parameters<DecoratorDescriber>,
-	Value = any
->(options: {
+function getDesignType(target: any, key: string | symbol) {
+	Reflect.getMetadata('design:type', target, key);
+}
+
+function getReturnType(target: any, key: string | symbol) {
+	Reflect.getMetadata('design:returntype', target, key);
+}
+
+function getParameterTypes(target: any, key: string | symbol) {
+	Reflect.getMetadata('design:paramtypes', target, key);
+}
+
+export function customClassDecorator<Value = any, Args extends Array<any> = Array<any>>(options: {
 	name: string;
-	value: (this: { target: Function }, ...args: Args) => Value;
-}): [DecoratorDescriber, DecoratorInfo<ClassDecorator, Args, Value>] {
+	factory?: (
+		this: {
+			set: (value: Value) => void;
+		},
+		...args: Args
+	) => ClassDecorator;
+	value?: (this: { target: Function }, ...args: Args) => Value;
+}): [(...args: Args) => ClassDecorator, DecoratorInfo<ClassDecorator, Args, Value>] {
 	return [
-		((...args: Args) => {
+		(...args: Args) => {
 			return (target) => {
-				setClassMetadata(options.name, target, options.value.apply({ target: target }, args));
+				const set = (value: any) => setClassMetadata(options.name, target, value);
+				if (options.factory) {
+					const decorator = options.factory.apply({ set }, args);
+					decorator(target);
+				} else if (options.value) {
+					const value = options.value.apply({ target: target }, args);
+					set(value);
+				}
 			};
-		}) as DecoratorDescriber,
+		},
 		{
 			name: options.name,
 			value: options.value,
@@ -36,28 +57,33 @@ export function customClassDecorator<
 	];
 }
 
-export function customPropertyDecorator<
-	DecoratorDescriber extends (...args: any[]) => PropertyDecorator,
-	Args extends Array<any> = Parameters<DecoratorDescriber>,
-	Value = any
->(options: {
+export function customPropertyDecorator<Value = any, Args extends Array<any> = Array<any>>(options: {
 	name: string;
-	value: (this: { target: Object; key: string | symbol }, ...args: Args) => Value;
+	factory?: (
+		this: {
+			set: (value: Value) => void;
+			getDesignType: () => any;
+		},
+		...args: Args
+	) => PropertyDecorator;
+	value?: (this: { target: Object; key: string | symbol }, ...args: Args) => Value;
 }): [
-	DecoratorDescriber,
+	(...args: Args) => PropertyDecorator,
 	DecoratorInfo<PropertyDecorator, Args, Value> & { getDesignType: (target: Object, key: string | symbol) => any }
 ] {
 	return [
-		((...args: Args) => {
+		(...args: Args) => {
 			return (target, key) => {
-				setPropertyMetadata(
-					options.name,
-					target,
-					key.toString(),
-					options.value.apply({ target: target, key: key }, args)
-				);
+				const set = (value: any) => setPropertyMetadata(options.name, target, key, value);
+				if (options.factory) {
+					const decorator = options.factory.apply({ set, getDesignType: () => getDesignType(target, key) }, args);
+					decorator(target, key);
+				} else if (options.value) {
+					const value = options.value.apply({ target: target, key: key }, args);
+					set(value);
+				}
 			};
-		}) as DecoratorDescriber,
+		},
 		{
 			name: options.name,
 			value: options.value,
@@ -67,15 +93,20 @@ export function customPropertyDecorator<
 	];
 }
 
-export function customMethodDecorator<
-	DecoratorDescriber extends (...args: any[]) => PropertyDecorator,
-	Args extends Array<any> = Parameters<DecoratorDescriber>,
-	Value = any
->(options: {
+export function customMethodDecorator<Value = any, Args extends Array<any> = Array<any>>(options: {
 	name: string;
-	value: (this: { target: Object; key: string | symbol }, ...args: Args) => Value;
+	factory?: (
+		this: {
+			set: (value: Value) => void;
+			getDesignType: () => any;
+			getReturnType: () => any;
+			getParameterTypes: () => any[];
+		},
+		...args: Args
+	) => PropertyDecorator;
+	value?: (this: { target: Object; key: string | symbol }, ...args: Args) => Value;
 }): [
-	DecoratorDescriber,
+	(...args: Args) => PropertyDecorator,
 	DecoratorInfo<PropertyDecorator, Args, Value> & {
 		getDesignType: (target: Object, key: string | symbol) => any;
 		getReturnType: (target: Object, key: string | symbol) => any;
@@ -83,16 +114,26 @@ export function customMethodDecorator<
 	}
 ] {
 	return [
-		((...args: Args) => {
+		(...args: Args) => {
 			return (target, key) => {
-				setPropertyMetadata(
-					options.name,
-					target,
-					key.toString(),
-					options.value.apply({ target: target, key: key }, args)
-				);
+				const set = (value: any) => setPropertyMetadata(options.name, target, key, value);
+				if (options.factory) {
+					const decorator = options.factory.apply(
+						{
+							set,
+							getDesignType: () => getDesignType(target, key),
+							getReturnType: () => getReturnType(target, key),
+							getParameterTypes: () => getParameterTypes(target, key)
+						},
+						args
+					);
+					decorator(target, key);
+				} else if (options.value) {
+					const value = options.value.apply({ target: target, key: key }, args);
+					set(value);
+				}
 			};
-		}) as DecoratorDescriber,
+		},
 		{
 			name: options.name,
 			value: options.value,
@@ -104,26 +145,32 @@ export function customMethodDecorator<
 	];
 }
 
-export function customParameterDecorator<
-	DecoratorDescriber extends (...args: any[]) => ParameterDecorator,
-	Args extends Array<any> = Parameters<DecoratorDescriber>,
-	Value = any
->(options: {
+export function customParameterDecorator<Value = any, Args extends Array<any> = Array<any>>(options: {
 	name: string;
-	value: (this: { target: Object; key: string | symbol | undefined; parameterIndex: number }, ...args: Args) => Value;
-}): [DecoratorDescriber, DecoratorInfo<ParameterDecorator, Args, Value>] {
+	factory?: (
+		this: {
+			set: (value: Value) => void;
+		},
+		...args: Args
+	) => ParameterDecorator;
+	value?: (this: { target: Object; key: string | symbol | undefined; parameterIndex: number }, ...args: Args) => Value;
+}): [(...args: Args) => ParameterDecorator, DecoratorInfo<ParameterDecorator, Args, Value>] {
 	return [
-		((...args: Args) => {
+		(...args: Args) => {
 			return (target, key, parameter_index) => {
-				setParameterMetadata(
-					options.name,
-					target,
-					key,
-					parameter_index,
-					options.value.apply({ target: target, key: key, parameterIndex: parameter_index }, args)
-				);
+				if (!key) {
+					return;
+				}
+				const set = (value: any) => setParameterMetadata(options.name, target, key, parameter_index, value);
+				if (options.factory) {
+					const decorator = options.factory.apply({ set }, args);
+					decorator(target, key, parameter_index);
+				} else if (options.value) {
+					const value = options.value.apply({ target: target, key: key, parameterIndex: parameter_index }, args);
+					set(value);
+				}
 			};
-		}) as DecoratorDescriber,
+		},
 		{
 			name: options.name,
 			value: options.value,

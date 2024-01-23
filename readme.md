@@ -38,15 +38,36 @@ const [Api, ApiDecorator] = customMethodDecorator({
 
 const [Param, ParamDecorator] = customParameterDecorator({
 	name: 'Param',
-	value: (name: string) => name
+	/** when `factory` function defined, `value` function only has type prompt function  */
+	value: (str: string) => str,
+	/**
+	 *  custom factory function, you need call `this.set` to set reflect-metadata value manually
+	 */
+	factory(s /** auto type prompt : string */) {
+		return (target, key, index) => {
+			// if `factory` set, must call this.set , otherwise value is undefined
+			// this.set(/** string type */)
+			this.set(s);
+
+			// ParamDecorator.get(target, key, index) // string | undefined
+			// ParamDecorator.name  // Param
+			// console.log(ParamDecorator.value('str')) // str
+		};
+	}
 });
+
+// same as :
+// const [Param, ParamDecorator] = customParameterDecorator({
+// 	name: 'Param',
+// 	value: (str: string) => str
+// });
 
 @Controller('/test')
 class TestController {
 	@Value(1)
 	val: number;
 
-	@Api('/b')
+	@Api('/name')
 	name(@Param('str') str: string): string {
 		console.log(str);
 		return str;
@@ -60,12 +81,12 @@ console.log(ControllerDecorator.get(TestController));
 console.log(ValueDecorator.get(controller, 'val'));
 console.log(ValueDecorator.getDesignType(controller, 'val'));
 
-console.log(ApiDecorator.get(controller, 'test'));
-console.log(ApiDecorator.getDesignType(controller, 'test'));
-console.log(ApiDecorator.getParameterTypes(controller, 'test'));
-console.log(ApiDecorator.getReturnType(controller, 'test'));
+console.log(ApiDecorator.get(controller, 'name'));
+console.log(ApiDecorator.getDesignType(controller, 'name'));
+console.log(ApiDecorator.getParameterTypes(controller, 'name'));
+console.log(ApiDecorator.getReturnType(controller, 'name'));
 
-console.log(ParamDecorator.get(controller, 'test', 0));
+console.log(ParamDecorator.get(controller, 'name', 0));
 ```
 
 run:
@@ -77,10 +98,10 @@ tsc && node ./lib/tests/index.js
 output:
 
 ```
-/a
+/test
 1
 [Function: Number]
-/b
+/name
 [Function: Function]
 [ [Function: String] ]
 [Function: String]
