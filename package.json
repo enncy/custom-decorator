@@ -1,6 +1,6 @@
 {
 	"name": "custom-decorator",
-	"version": "0.0.11",
+	"version": "0.0.12",
 	"description": "easier to create your custom decorator",
 	"types": "./lib/index.d.ts",
 	"main": "./lib/index.js",
