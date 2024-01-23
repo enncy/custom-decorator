@@ -57,7 +57,7 @@ export function setParameterMetadata(
  * @param decorator_name 		装饰器名称
  * @param target 	类
  */
-export function getClassMetadata(decorator_name: string | { name: string }, target: Function) {
+export function getClassMetadata<T>(decorator_name: string | { name: string }, target: Function): T {
 	const _name = typeof decorator_name === 'string' ? decorator_name : decorator_name.name;
 	return Reflect.getMetadata(`${METADATA_CLASS_KEY}:${_name.toLowerCase()}`, target);
 }
@@ -68,7 +68,11 @@ export function getClassMetadata(decorator_name: string | { name: string }, targ
  * @param target  类
  * @param key  	  属性
  */
-export function getPropertyMetadata(decorator_name: string | { name: string }, target: Object, key: string | symbol) {
+export function getPropertyMetadata<T>(
+	decorator_name: string | { name: string },
+	target: Object,
+	key: string | symbol
+): T {
 	const _name = typeof decorator_name === 'string' ? decorator_name : decorator_name.name;
 	return Reflect.getMetadata(`${METADATA_PROPERTY_KEY}:${_name.toLowerCase()}`, target, key);
 }
@@ -79,12 +83,12 @@ export function getPropertyMetadata(decorator_name: string | { name: string }, t
  * @param target   类
  * @param key 	   属性
  */
-export function getParameterMetadata(
+export function getParameterMetadata<T>(
 	decorator_name: string | { name: string },
 	target: Object,
 	key: string | symbol,
 	parameter_index: number
-) {
+): T {
 	const _name = typeof decorator_name === 'string' ? decorator_name : decorator_name.name;
 	return Reflect.getMetadata(`${METADATA_PARAMETER_KEY}:${parameter_index}:${_name.toLowerCase()}`, target, key);
 }
