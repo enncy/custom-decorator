@@ -9,7 +9,7 @@ npm i custom-decorator
 ## Example
 
 ```ts
-import { CustomDecorator } from '../src/index';
+import { CustomDecorator } from 'custom-decorator';
 
 // example
 
@@ -41,4 +41,21 @@ class B {
 console.log(CustomDecorator.getClassMetadata(SimplifyDecorator, B)); // hello
 console.log(CustomDecorator.getPropertyMetadata(TestMethod, new B(), 'test')); // test
 console.log(CustomDecorator.getParameterMetadata(TestParameter, new B(), 'test', 0)); // 4
+```
+
+**defineGetter** : define getter by decorator-value type mapping
+
+```ts
+import { defineGetter } from 'custom-decorator';
+
+/**
+ * type prompt
+ */
+const getter = defineGetter<{
+	(d: typeof TestMethod): string;
+}>();
+
+console.log(getter(TestMethod, new B(), 'test'));
+// type: string
+// value: 'test'
 ```

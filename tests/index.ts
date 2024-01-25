@@ -1,4 +1,5 @@
 import { CustomDecorator } from '../src/index';
+import { defineGetter } from '../src/utils';
 
 // example
 
@@ -30,3 +31,14 @@ class B {
 console.log(CustomDecorator.getClassMetadata(SimplifyDecorator, B));
 console.log(CustomDecorator.getPropertyMetadata(TestMethod, new B(), 'test'));
 console.log(CustomDecorator.getParameterMetadata(TestParameter, new B(), 'test', 0));
+
+/**
+ * type prompt
+ */
+const getter = defineGetter<{
+	(dec: typeof TestMethod): string;
+}>();
+
+console.log(getter(TestMethod, new B(), 'test'));
+// type: string
+// value: 'test'

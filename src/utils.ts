@@ -74,6 +74,7 @@ export function getPropertyMetadata<T = any>(
 	key: string | symbol
 ): T {
 	const _name = typeof decorator_name === 'string' ? decorator_name : decorator_name.name;
+
 	return Reflect.getMetadata(`${METADATA_PROPERTY_KEY}:${_name.toLowerCase()}`, target, key);
 }
 
@@ -154,4 +155,25 @@ export function factory<
 	Object.defineProperty(func, 'name', { value: decorator_name });
 
 	return func;
+}
+
+export function defineGetter<T extends (decorator: any) => any>(): (
+	decorator: Parameters<T>[0],
+	...args: Parameters<
+		ReturnType<Parameters<T>[0]> extends MethodDecorator ? PropertyDecorator : ReturnType<Parameters<T>[0]>
+	>
+) => ReturnType<T> {
+	return ((decorator: Parameters<T>[0], ...args: any[]) => {
+		const target = args[0];
+		const key = args[1];
+		if (key === undefined) {
+			return getClassMetadata(decorator, target);
+		}
+		const index = args[2];
+		if (index === undefined) {
+			return getPropertyMetadata(decorator, target, key);
+		} else {
+			return getParameterMetadata(decorator, target, key, index);
+		}
+	}) as any;
 }
