@@ -157,13 +157,11 @@ export function factory<
 	return func;
 }
 
-export function defineGetter<T extends (decorator: any) => any>(): (
-	decorator: Parameters<T>[0],
-	...args: Parameters<
-		ReturnType<Parameters<T>[0]> extends MethodDecorator ? PropertyDecorator : ReturnType<Parameters<T>[0]>
-	>
+export function defineGetter<T extends (decorator: any) => any>(): <FT extends (decorator: any) => any>(
+	decorator: FT,
+	...args: Parameters<ReturnType<FT> extends MethodDecorator ? PropertyDecorator : ReturnType<FT>>
 ) => ReturnType<T> {
-	return ((decorator: Parameters<T>[0], ...args: any[]) => {
+	return (decorator: any, ...args: any[]) => {
 		const target = args[0];
 		const key = args[1];
 		if (key === undefined) {
@@ -175,5 +173,5 @@ export function defineGetter<T extends (decorator: any) => any>(): (
 		} else {
 			return getParameterMetadata(decorator, target, key, index);
 		}
-	}) as any;
+	};
 }
