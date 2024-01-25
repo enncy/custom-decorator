@@ -1,5 +1,5 @@
 import { CustomDecorator } from '../src/index';
-import { defineGetter } from '../src/utils';
+import { GetterArgs, defineGetter } from '../src/utils';
 
 // example
 
@@ -18,9 +18,9 @@ console.log(CustomDecorator.getClassMetadata(Decorator, A));
 
 const SimplifyDecorator = CustomDecorator.factory('SimplifyDecorator', 'class', (val: string) => val);
 
-const TestMethod = CustomDecorator.factory('method-dec', 'method', (val: string) => val);
+const TestMethod = CustomDecorator.factory('TestMethod', 'method', (val: string) => val);
 
-const TestParameter = CustomDecorator.factory('parameter-dec', 'parameter', (num: number) => num * 2);
+const TestParameter = CustomDecorator.factory('TestParameter', 'parameter', (num: number) => num * 2);
 
 @SimplifyDecorator('hello')
 class B {
@@ -36,9 +36,13 @@ console.log(CustomDecorator.getParameterMetadata(TestParameter, new B(), 'test',
  * type prompt
  */
 const getter = defineGetter<{
-	(dec: typeof TestMethod): string;
+	(dec: 'TestMethod', ...args: GetterArgs<typeof TestMethod>): string;
+	(dec: 'TestParameter', ...args: GetterArgs<typeof TestParameter>): number;
 }>();
 
-console.log(getter(TestMethod, new B(), 'test'));
+console.log(getter('TestMethod', new B(), 'test'));
 // type: string
 // value: 'test'
+console.log(getter('TestParameter', new B(), 'test', 0));
+// type: number
+// value: 4
