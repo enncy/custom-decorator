@@ -114,65 +114,88 @@ export function getDesign(
 	};
 }
 
-export function factory<
-	T extends 'class' | 'property' | 'method' | 'parameter',
-	DT extends T extends 'class'
-		? ClassDecorator
-		: T extends 'property'
-		? PropertyDecorator
-		: T extends 'method'
-		? MethodDecorator
-		: T extends 'parameter'
-		? ParameterDecorator
-		: undefined,
-	Value,
-	Setter extends (...args: any[]) => Value
->(decorator_name: string, type: T, setter: Setter): (...args: Parameters<Setter>) => DT {
-	const func = function (...args: Parameters<Setter>) {
-		if (type === 'class') {
-			return ((target) => {
-				setClassMetadata(decorator_name, target, setter(...args));
-			}) as ClassDecorator;
+export function factory<T extends 'class' | 'property' | 'method' | 'parameter'>(
+	decorator: Function,
+	value: any
+): T extends 'class'
+	? ClassDecorator
+	: T extends 'property'
+	? PropertyDecorator
+	: T extends 'method'
+	? MethodDecorator
+	: T extends 'parameter'
+	? ParameterDecorator
+	: undefined {
+	return ((target: any, key: any, index: any) => {
+		if (key === undefined) {
+			setClassMetadata(decorator.name, target, value);
+			return;
 		}
-		if (type === 'property') {
-			return ((target, key) => {
-				setPropertyMetadata(decorator_name, target, key, setter(...args));
-			}) as PropertyDecorator;
+		if (typeof index === 'number') {
+			setParameterMetadata(decorator.name, target, key, index, value);
+			return;
 		}
-		if (type === 'method') {
-			return ((target, key) => {
-				setPropertyMetadata(decorator_name, target, key, setter(...args));
-			}) as MethodDecorator;
-		}
-		if (type === 'parameter') {
-			return ((target, key, parameter_index) => {
-				setParameterMetadata(decorator_name, target, key, parameter_index, setter(...args));
-			}) as ParameterDecorator;
-		}
-		return undefined;
-	} as (...args: Parameters<Setter>) => DT;
-
-	Object.defineProperty(func, 'name', { value: decorator_name });
-
-	return func;
+		setPropertyMetadata(decorator.name, target, key, value);
+	}) as any;
 }
 
-export type GetterArgs<
+export function classFactory(decorator: Function, value_to_set: any) {
+	return factory<'class'>(decorator, value_to_set);
+}
+
+export function propertyFactory(decorator: Function, value_to_set: any) {
+	return factory<'property'>(decorator, value_to_set);
+}
+
+export function methodFactory(decorator: Function, value_to_set: any) {
+	return factory<'method'>(decorator, value_to_set);
+}
+
+export function parameterFactory(decorator: Function, value_to_set: any) {
+	return factory<'parameter'>(decorator, value_to_set);
+}
+
+type GetterArgs<
 	T extends (...args: any[]) => ClassDecorator | MethodDecorator | PropertyDecorator | ParameterDecorator
 > = Parameters<ReturnType<T> extends MethodDecorator ? PropertyDecorator : ReturnType<T>>;
 
-export function defineGetter<Define extends (dec: any, ...args: any[]) => any>() {
-	return ((decorator: any, ...args: any): any => {
-		const target: any = args[0];
-		const key = args[1] as string | symbol | undefined;
-		if (key === undefined) {
-			return getClassMetadata(decorator, target);
+export function defineGetter<Define extends Record<string, [any, any]>>(): {
+	[K in keyof Define]: Define[K] extends [infer D extends (...args: any[]) => any, infer T]
+		? (...args: GetterArgs<D>) => T
+		: unknown;
+} {
+	return new Proxy(
+		{},
+		{
+			get(target, decorator_key, receiver) {
+				return (...args: any): any => {
+					const target: any = args[0];
+					const key = args[1] as string | symbol | undefined;
+					if (key === undefined) {
+						return getClassMetadata(decorator_key.toString(), target);
+					}
+					const index = args[2] as number | undefined;
+					if (index === undefined) {
+						return getPropertyMetadata(decorator_key.toString(), target, key);
+					} else {
+						return getParameterMetadata(decorator_key.toString(), target, key, index);
+					}
+				};
+			}
 		}
-		const index = args[2] as number | undefined;
-		if (index === undefined) {
-			return getPropertyMetadata(decorator, target, key);
-		} else {
-			return getParameterMetadata(decorator, target, key, index);
-		}
-	}) as Define;
+	) as any;
+
+	// return (decorator: any, ...args: any): any => {
+	// 	const target: any = args[0];
+	// 	const key = args[1] as string | symbol | undefined;
+	// 	if (key === undefined) {
+	// 		return getClassMetadata(decorator, target);
+	// 	}
+	// 	const index = args[2] as number | undefined;
+	// 	if (index === undefined) {
+	// 		return getPropertyMetadata(decorator, target, key);
+	// 	} else {
+	// 		return getParameterMetadata(decorator, target, key, index);
+	// 	}
+	// };
 }

@@ -26,11 +26,17 @@ console.log(CustomDecorator.getClassMetadata(Decorator, A)); // hello
 
 // simplify
 
-const SimplifyDecorator = CustomDecorator.factory('SimplifyDecorator', 'class', (val: string) => val);
+function SimplifyDecorator(val: string) {
+	return CustomDecorator.classFactory(SimplifyDecorator, val);
+}
 
-const TestMethod = CustomDecorator.factory('method-dec', 'method', (val: string) => val);
+function TestMethod(val: string) {
+	return CustomDecorator.methodFactory(TestMethod, val);
+}
 
-const TestParameter = CustomDecorator.factory('parameter-dec', 'parameter', (num: number) => num * 2);
+function TestParameter(num: number) {
+	return CustomDecorator.parameterFactory(TestParameter, num * 2);
+}
 
 @SimplifyDecorator('hello')
 class B {
@@ -46,16 +52,20 @@ console.log(CustomDecorator.getParameterMetadata(TestParameter, new B(), 'test',
 **defineGetter** : define getter by decorator-value type mapping
 
 ```ts
-import { defineGetter } from 'custom-decorator';
+import { CustomDecorator } from 'custom-decorator';
 
 /**
  * type prompt
  */
-const getter = defineGetter<{
-	(d: typeof TestMethod): string;
+const getter = CustomDecorator.defineGetter<{
+	TestMethod: [typeof TestMethod, string];
+	TestParameter: [typeof TestParameter, number];
 }>();
 
-console.log(getter(TestMethod, new B(), 'test'));
+console.log(getter.TestMethod(new B(), 'test'));
 // type: string
 // value: 'test'
+console.log(getter.TestParameter(new B(), 'test', 0));
+// type: number
+// value: 4
 ```
